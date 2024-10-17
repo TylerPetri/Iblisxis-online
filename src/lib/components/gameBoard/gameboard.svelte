@@ -15,22 +15,41 @@
 		vertical = 'vertical'
 	}
 
+	interface Ship {
+		name: string;
+		image: string;
+		size: number;
+		color: string;
+	}
+
 	const columns: number = 10;
 	const rows: string[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
 	let inBattlefieldAlly: boolean = false;
 	let inBattlefieldEnemy: boolean = false;
 
-	let hoveringAlly: number[] | undefined[] = [undefined, undefined];
+	let hoveringAlly: number[][] | undefined[][] = [[undefined], [undefined]];
 	let hoveringEnemy: number[] | undefined[] = [undefined, undefined];
 
 	let visitedAlly: string[] = [];
 	let visitedEnemy: string[] = [];
 
 	let dotsDirection = Direction.horizontal;
-	let selectedShip: any = undefined;
+	let selectedShip: Ship | undefined = undefined;
 
-	$: console.log(selectedShip);
+	$: if (
+		selectedShip &&
+		(dotsDirection === Direction.horizontal || dotsDirection === Direction.vertical)
+	) {
+		if (dotsDirection === Direction.horizontal) {
+			hoveringAlly[1] = new Array(selectedShip.size).fill(undefined);
+			hoveringAlly[0] = [undefined];
+		}
+		if (dotsDirection === Direction.vertical) {
+			hoveringAlly[0] = new Array(selectedShip.size).fill(undefined);
+			hoveringAlly[1] = [undefined];
+		}
+	}
 
 	const ships = [
 		{
@@ -69,7 +88,22 @@
 		if (player === Player.enemy) {
 			hoveringEnemy = [row, col];
 		} else {
-			hoveringAlly = [row, col];
+			if (selectedShip) {
+				if (dotsDirection === Direction.horizontal) {
+					for (let i = 0; i < selectedShip.size; i++) {
+						hoveringAlly[1][i] = col + i;
+					}
+					hoveringAlly[0][0] = row;
+				}
+				if (dotsDirection === Direction.vertical) {
+					for (let i = 0; i < selectedShip.size; i++) {
+						hoveringAlly[0][i] = row + i;
+					}
+					hoveringAlly[1][0] = col;
+				}
+			} else {
+				hoveringAlly = [[row], [col]];
+			}
 		}
 	}
 
@@ -78,13 +112,19 @@
 			if (player === Player.enemy) {
 				visitedEnemy = [...visitedEnemy, '' + row + col];
 			} else {
+				if (selectedShip) {
+				}
 				visitedAlly = [...visitedAlly, '' + row + col];
 			}
 		}
 	}
 
-	function handleClickShip(ship: string) {
-		selectedShip = ships.find((x) => x.name === ship);
+	function handleClickShip(shipName: string) {
+		if (selectedShip?.name === shipName) {
+			selectedShip = undefined;
+		} else {
+			selectedShip = ships.find((x) => x.name === shipName);
+		}
 	}
 
 	function handleRotate() {
@@ -112,7 +152,9 @@
 							on:focus
 							on:click={() => handleClickCell(Player.ally, i, j)}
 						>
-							{#if inBattlefieldAlly && selectedShip && hoveringAlly[1] !== undefined && (hoveringAlly[1] + selectedShip.size - 1) >= j && !(j < hoveringAlly[1]) && hoveringAlly[0] === i}
+							{#if inBattlefieldAlly && selectedShip && dotsDirection === Direction.horizontal && hoveringAlly[1].findIndex((x) => x === j) !== -1 && hoveringAlly[0][0] === i}
+								<i class="fa-solid fa-circle-dot" style={`color: ${selectedShip.color}`}></i>
+							{:else if inBattlefieldAlly && selectedShip && dotsDirection === Direction.vertical && hoveringAlly[0].findIndex((x) => x === i) !== -1 && hoveringAlly[1][0] === j}
 								<i class="fa-solid fa-circle-dot" style={`color: ${selectedShip.color}`}></i>
 							{:else}
 								<i class="fa-regular fa-circle-dot"></i>
@@ -152,7 +194,11 @@
 	</div>
 	<div class="ship-selection-container">
 		{#each ships as ship, i}
-			<button class="ship-container" on:click={() => handleClickShip(ship.name)}>
+			<button
+				class="ship-container"
+				class:selected={selectedShip === ship}
+				on:click={() => handleClickShip(ship.name)}
+			>
 				<div class="image-container">
 					<img src={ship.image} alt={ship.image} />
 				</div>
