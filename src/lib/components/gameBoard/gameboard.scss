@@ -1,0 +1,103 @@
+.wrapper {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.boardgame-container {
+	display: flex;
+	gap: 15px;
+
+	button {
+		background-color: transparent;
+		border: none;
+
+		color: rgb(116, 21, 32);
+	}
+
+	.ally-board,
+	.enemy-board {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.divider {
+		height: 260px;
+		width: 3px;
+		background-color: grey;
+	}
+
+	.row {
+		display: flex;
+		flex-wrap: nowrap;
+		align-items: center;
+
+		height: max-content;
+	}
+
+	.node {
+		padding: 5px;
+		height: min-content max-content;
+	}
+
+	.visited {
+		color: grey;
+	}
+}
+
+.ship-selection-container {
+	border: 2px grey solid;
+	color: grey;
+	margin-top: 25px;
+	max-width: 800px;
+
+	display: flex;
+	flex-wrap: wrap;
+
+	button {
+		height: 100px;
+		width: 400px;
+
+		display: flex;
+		align-items: center;
+
+		background-color: transparent;
+		border: none;
+
+		&:hover {
+			cursor: pointer;
+			background-color: rgb(116, 21, 32);
+		}
+	}
+
+	.ship-container {
+		.image-container {
+			height: 100px;
+			width: 300px;
+
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.dots {
+			display: flex;
+			gap: 4px;
+		}
+
+    .vertical {
+      flex-direction: column;
+      margin: 0 auto;
+    }
+	}
+
+  .rotate {
+    color:grey;
+    
+    i {
+      font-size: 50px;
+      margin: 0 auto;
+    }
+  }
+}
