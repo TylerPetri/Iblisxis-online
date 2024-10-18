@@ -1,5 +1,6 @@
 <script lang="ts">
-	import Node from './node.svelte';
+	import NodeAlly from './nodeAlly.svelte';
+	import NodeEnemy from './nodeEnemy.svelte';
 
 	import { Direction, Player } from '$lib/types/enum';
 	import type { Ship } from '$lib/types/interface';
@@ -15,12 +16,6 @@
 
 	let inBattlefieldAlly: boolean = false;
 	let inBattlefieldEnemy: boolean = false;
-
-	let hoveringAlly: number[] | undefined[] = [undefined, undefined];
-	let hoveringEnemy: number[] | undefined[] = [undefined, undefined];
-
-	let visitedAlly: string[] = [];
-	let visitedEnemy: string[] = [];
 
 	let dotsDirection = Direction.horizontal;
 	let selectedShip: Ship | undefined = undefined;
@@ -63,14 +58,6 @@
 		}
 	];
 
-	function handleHover(player: Player, idx: number[]): void {
-		if (player === Player.enemy) {
-			hoveringEnemy = idx;
-		} else {
-			hoveringAlly = idx;
-		}
-	}
-
 	function handleClickShip(shipName: string) {
 		if (selectedShip?.name === shipName) {
 			selectedShip = undefined;
@@ -88,7 +75,7 @@
 	let hoveringIdx: number[] | undefined = undefined;
 	let placingShip: boolean = false;
 
-	function handleShipPlacement(name: string) {
+	function handleShipAssignment(name: string, size: number) {
 		placingShip = true;
 		for (let i = 0; i < ships.length; i++) {
 			if (ships[i].name === name) {
@@ -105,41 +92,25 @@
 			{#each rows as row, i}
 				<div class="row">
 					{#each columns as col, j}
-						<Node
+						<NodeAlly
 							idx={[i, j]}
 							bind:inBattlefieldAlly
 							bind:hoveringIdx
 							bind:placingShip
 							bind:selectedShip
 							{dotsDirection}
-							{handleShipPlacement}
+							{handleShipAssignment}
 						/>
 					{/each}
 				</div>
 			{/each}
 		</div>
 		<div class="divider" />
-		<div
-			class="enemy-board"
-			on:mouseenter={() => (inBattlefieldEnemy = true)}
-			on:mouseleave={() => (inBattlefieldEnemy = false)}
-			role="table"
-		>
+		<div class="enemy-board" on:mouseleave={() => (inBattlefieldEnemy = false)} role="table">
 			{#each rows as row, i}
 				<div class="row">
 					{#each columns as col, j}
-						<button
-							class="node"
-							class:visited={visitedEnemy.includes('' + i + j)}
-							on:mouseover={() => handleHover(Player.enemy, [i, j])}
-							on:focus
-						>
-							{#if inBattlefieldEnemy && hoveringEnemy[0] === i && hoveringEnemy[1] === j && !visitedEnemy.includes('' + i + j)}
-								<i class="fa-solid fa-circle-dot"></i>
-							{:else}
-								<i class="fa-regular fa-circle-dot"></i>
-							{/if}
-						</button>
+						<NodeEnemy bind:inBattlefieldEnemy />
 					{/each}
 				</div>
 			{/each}
@@ -167,7 +138,7 @@
 			{/key}
 		{/each}
 		<button class="rotate" on:click={() => handleRotate()}
-			><i class="fa-solid fa-rotate-right"></i></button
+			><i class="fa-solid fa-arrows-spin"></i></button
 		>
 	</div>
 </div>

@@ -1,20 +1,17 @@
 <script lang="ts">
-	import { Direction, Player } from '$lib/types/enum';
+	import { Direction } from '$lib/types/enum';
 	import type { Ship } from '$lib/types/interface';
 
 	export let idx: number[];
 	export let color = 'rgb(116, 21, 32)';
-	export let hit = false;
 	export let selectedShip: Ship | undefined = undefined;
-	export let visited = false;
-	export let player = Player.ally;
 	export let hovering = false;
 	export let hoveringIdx: number[] | undefined = undefined;
 	export let dotsDirection;
 	export let inBattlefieldAlly: boolean = false;
 	export let placingShip: boolean;
 
-	export let handleShipPlacement;
+	export let handleShipAssignment;
 
 	let hoveringSelectedShip = false;
 	let designatedShip: Ship | undefined = undefined;
@@ -29,21 +26,21 @@
 		color = 'rgb(116, 21, 32)';
 	}
 
-  /**
-   * Designate ship to node
-  */
+	/**
+	 * Designate ship to node
+	 */
 	$: if (placingShip && hoveringSelectedShip) {
-		designatedShip = selectedShip;
-		hoveringSelectedShip = false;
-		selectedShip = undefined;
+			designatedShip = selectedShip;
+			hoveringSelectedShip = false;
+			selectedShip = undefined;
+			placingShip = false;
+	}
+	/**
+	 * Reset placingShip so it can be triggered
+	 */
+	$: if (placingShip && !hoveringSelectedShip) {
 		placingShip = false;
 	}
-  /**
-   * Reset placingShip so it can be triggered
-  */
-  $: if (placingShip && !hoveringSelectedShip) {
-    placingShip = false;
-  }
 	/**
 	 * When change row or column and exceeding grid, reset to default
 	 */
@@ -65,7 +62,7 @@
 	}
 	/**
 	 * Click and drop battleship within grid when horizontal
-	 */
+	 */ 
 	$: if (
 		!designatedShip &&
 		selectedShip &&
@@ -122,15 +119,13 @@
 
 <button
 	class="node"
-	class:visited
 	on:click={() => {
-		if (!designatedShip && selectedShip) handleShipPlacement(selectedShip?.name);
+		if (!designatedShip && selectedShip) {
+			handleShipAssignment(selectedShip.name, selectedShip.size);
+		}
 	}}
 	on:mouseover={() => (hovering = true)}
-	on:mouseout={() => {
-		hovering = false;
-		if (designatedShip) selectedShip = undefined;
-	}}
+	on:mouseout={() => (hovering = false)}
 	on:focus
 	on:blur
 >
