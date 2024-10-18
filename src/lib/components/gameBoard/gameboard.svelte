@@ -72,18 +72,11 @@
 			: (dotsDirection = Direction.horizontal);
 	}
 
-	let hoveringIdx: number[] | undefined = undefined;
-	let placingShip: boolean = false;
-
-	function handleShipAssignment(name: string, size: number) {
-		placingShip = true;
-		for (let i = 0; i < ships.length; i++) {
-			if (ships[i].name === name) {
-				ships[i].designated = true;
-				break;
-			}
-		}
-	}
+	let selectedShipSizeCount: number = 0
+	let nextSelectShipIdx: number[] | undefined = undefined
+	$: if (selectedShip) selectedShipSizeCount = selectedShip.size - 1
+	$: console.log(nextSelectShipIdx)
+	// todo: its not working yet
 </script>
 
 <div class="wrapper">
@@ -95,11 +88,10 @@
 						<VertexAlly
 							idx={[i, j]}
 							bind:inBattlefieldAlly
-							bind:hoveringIdx
-							bind:placingShip
+							bind:nextSelectShipIdx
 							bind:selectedShip
+							bind:selectedShipSizeCount
 							{dotsDirection}
-							{handleShipAssignment}
 						/>
 					{/each}
 				</div>
