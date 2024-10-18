@@ -3,7 +3,6 @@
 	import type { Ship } from '$lib/types/interface';
 
 	export let idx: number[];
-	export let neighbours: number[][] = []
 	export let color = 'rgb(116, 21, 32)';
 	export let selectedShip: Ship | undefined = undefined;
 	export let hovering = false;
@@ -14,8 +13,35 @@
 
 	export let handleShipAssignment;
 
+	$: neighbours = setNeighbours(idx);
+
 	let hoveringSelectedShip = false;
 	let designatedShip: Ship | undefined = undefined;
+
+	/**
+	 * @param idx
+	 * @return [left, up, right, down]
+	 */
+	function setNeighbours(idx: number[]) {
+		const inBounds = [idx[1] - 1 >= 0, idx[0] - 1 >= 0, idx[1] + 1 <= 9, idx[0] + 1 <= 9];
+		const neighbours = new Array(4).fill(null);
+		const positions = [
+			[idx[0], idx[1] - 1],
+			[idx[0] - 1, idx[1]],
+			[idx[0], idx[1] + 1],
+			[idx[0] + 1, idx[1]]
+		];
+
+		for (let i = 0; i < neighbours.length; i++) {
+			if (inBounds[i]) {
+				neighbours[i] = positions[i];
+			}
+		}
+
+		return neighbours;
+	}
+
+	$: console.log(idx, neighbours)
 
 	$: if (hovering) {
 		hoveringIdx = idx;
@@ -31,10 +57,10 @@
 	 * Designate ship to node
 	 */
 	$: if (placingShip && hoveringSelectedShip) {
-			designatedShip = selectedShip;
-			hoveringSelectedShip = false;
-			selectedShip = undefined;
-			placingShip = false;
+		designatedShip = selectedShip;
+		hoveringSelectedShip = false;
+		selectedShip = undefined;
+		placingShip = false;
 	}
 	/**
 	 * Reset placingShip so it can be triggered
@@ -63,7 +89,7 @@
 	}
 	/**
 	 * Click and drop battleship within grid when horizontal
-	 */ 
+	 */
 	$: if (
 		!designatedShip &&
 		selectedShip &&
