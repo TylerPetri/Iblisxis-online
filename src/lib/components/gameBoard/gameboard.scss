@@ -9,11 +9,16 @@
 	display: flex;
 	gap: 15px;
 
-	button {
+	:global(button) {
 		background-color: transparent;
 		border: none;
 
 		color: rgb(116, 21, 32);
+	}
+
+	:global(.node) {
+		padding: 5px;
+		height: min-content max-content;
 	}
 
 	.ally-board,
@@ -34,11 +39,6 @@
 		align-items: center;
 
 		height: max-content;
-	}
-
-	.node {
-		padding: 5px;
-		height: min-content max-content;
 	}
 
 	.visited {
@@ -68,6 +68,11 @@
 		&:hover {
 			cursor: pointer;
 			background-color: rgb(116, 21, 32);
+		}
+
+		&:disabled {
+			opacity: 0.3;
+			cursor: not-allowed;
 		}
 	}
 

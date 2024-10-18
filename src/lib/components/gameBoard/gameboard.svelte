@@ -1,34 +1,22 @@
 <script lang="ts">
+	import Node from './node.svelte';
+
+	import { Direction, Player } from '$lib/types/enum';
+	import type { Ship } from '$lib/types/interface';
+
 	import aircraftCarrier from '$lib/assets/ships/aircraft-carrier.png';
 	import battleship from '$lib/assets/ships/battleship.png';
 	import cruiser from '$lib/assets/ships/cruiser.png';
 	import destroyer from '$lib/assets/ships/destroyer.png';
 	import submarine from '$lib/assets/ships/submarine.png';
 
-	enum Player {
-		ally = 'ally',
-		enemy = 'enemy'
-	}
-
-	enum Direction {
-		horizontal = 'horizontal',
-		vertical = 'vertical'
-	}
-
-	interface Ship {
-		name: string;
-		image: string;
-		size: number;
-		color: string;
-	}
-
-	const columns: number = 10;
+	const columns: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 	const rows: string[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
 	let inBattlefieldAlly: boolean = false;
 	let inBattlefieldEnemy: boolean = false;
 
-	let hoveringAlly: number[][] | undefined[][] = [[undefined], [undefined]];
+	let hoveringAlly: number[] | undefined[] = [undefined, undefined];
 	let hoveringEnemy: number[] | undefined[] = [undefined, undefined];
 
 	let visitedAlly: string[] = [];
@@ -37,85 +25,49 @@
 	let dotsDirection = Direction.horizontal;
 	let selectedShip: Ship | undefined = undefined;
 
-	$: if (
-		selectedShip &&
-		(dotsDirection === Direction.horizontal || dotsDirection === Direction.vertical)
-	) {
-		if (dotsDirection === Direction.horizontal) {
-			hoveringAlly[1] = new Array(selectedShip.size).fill(undefined);
-			hoveringAlly[0] = [undefined];
-		}
-		if (dotsDirection === Direction.vertical) {
-			hoveringAlly[0] = new Array(selectedShip.size).fill(undefined);
-			hoveringAlly[1] = [undefined];
-		}
-	}
-
 	const ships = [
 		{
 			name: 'aircraft-carrier',
 			image: aircraftCarrier,
 			size: 5,
-			color: 'orange'
+			color: 'orange',
+			designated: false
 		},
 		{
 			name: 'battleship',
 			image: battleship,
 			size: 4,
-			color: 'red'
+			color: 'red',
+			designated: false
 		},
 		{
 			name: 'cruiser',
 			image: cruiser,
 			size: 3,
-			color: 'grey'
+			color: 'grey',
+			designated: false
 		},
 		{
 			name: 'submarine',
 			image: submarine,
 			size: 3,
-			color: 'green'
+			color: 'green',
+			designated: false
 		},
 		{
 			name: 'destroyer',
 			image: destroyer,
 			size: 2,
-			color: 'purple'
+			color: 'purple',
+			designated: false
 		}
 	];
 
-	function handleHover(player: Player, row: number, col: number): void {
+	function handleHover(player: Player, idx: number[]): void {
 		if (player === Player.enemy) {
-			hoveringEnemy = [row, col];
+			hoveringEnemy = idx;
 		} else {
-			if (selectedShip) {
-				if (dotsDirection === Direction.horizontal) {
-					for (let i = 0; i < selectedShip.size; i++) {
-						hoveringAlly[1][i] = col + i;
-					}
-					hoveringAlly[0][0] = row;
-				}
-				if (dotsDirection === Direction.vertical) {
-					for (let i = 0; i < selectedShip.size; i++) {
-						hoveringAlly[0][i] = row + i;
-					}
-					hoveringAlly[1][0] = col;
-				}
-			} else {
-				hoveringAlly = [[row], [col]];
-			}
-		}
-	}
-
-	function handleClickCell(player: Player, row: number, col: number): void {
-		if (!visitedEnemy.includes('' + row + col)) {
-			if (player === Player.enemy) {
-				visitedEnemy = [...visitedEnemy, '' + row + col];
-			} else {
-				if (selectedShip) {
-				}
-				visitedAlly = [...visitedAlly, '' + row + col];
-			}
+			hoveringAlly = idx;
 		}
 	}
 
@@ -132,34 +84,36 @@
 			? (dotsDirection = Direction.vertical)
 			: (dotsDirection = Direction.horizontal);
 	}
+
+	let hoveringIdx: number[] | undefined = undefined;
+	let placingShip: boolean = false;
+
+	function handleShipPlacement(name: string) {
+		placingShip = true;
+		for (let i = 0; i < ships.length; i++) {
+			if (ships[i].name === name) {
+				ships[i].designated = true;
+				break;
+			}
+		}
+	}
 </script>
 
 <div class="wrapper">
 	<div class="boardgame-container">
-		<div
-			class="ally-board"
-			on:mouseenter={() => (inBattlefieldAlly = true)}
-			on:mouseleave={() => (inBattlefieldAlly = false)}
-			role="table"
-		>
+		<div class="ally-board" on:mouseleave={() => (inBattlefieldAlly = false)} role="table">
 			{#each rows as row, i}
 				<div class="row">
-					{#each { length: columns } as col, j}
-						<button
-							class="node"
-							class:visited={visitedAlly.includes('' + i + j)}
-							on:mouseover={() => handleHover(Player.ally, i, j)}
-							on:focus
-							on:click={() => handleClickCell(Player.ally, i, j)}
-						>
-							{#if inBattlefieldAlly && selectedShip && dotsDirection === Direction.horizontal && hoveringAlly[1].findIndex((x) => x === j) !== -1 && hoveringAlly[0][0] === i}
-								<i class="fa-solid fa-circle-dot" style={`color: ${selectedShip.color}`}></i>
-							{:else if inBattlefieldAlly && selectedShip && dotsDirection === Direction.vertical && hoveringAlly[0].findIndex((x) => x === i) !== -1 && hoveringAlly[1][0] === j}
-								<i class="fa-solid fa-circle-dot" style={`color: ${selectedShip.color}`}></i>
-							{:else}
-								<i class="fa-regular fa-circle-dot"></i>
-							{/if}
-						</button>
+					{#each columns as col, j}
+						<Node
+							idx={[i, j]}
+							bind:inBattlefieldAlly
+							bind:hoveringIdx
+							bind:placingShip
+							bind:selectedShip
+							{dotsDirection}
+							{handleShipPlacement}
+						/>
 					{/each}
 				</div>
 			{/each}
@@ -173,13 +127,12 @@
 		>
 			{#each rows as row, i}
 				<div class="row">
-					{#each { length: columns } as col, j}
+					{#each columns as col, j}
 						<button
 							class="node"
 							class:visited={visitedEnemy.includes('' + i + j)}
-							on:mouseover={() => handleHover(Player.enemy, i, j)}
+							on:mouseover={() => handleHover(Player.enemy, [i, j])}
 							on:focus
-							on:click={() => handleClickCell(Player.enemy, i, j)}
 						>
 							{#if inBattlefieldEnemy && hoveringEnemy[0] === i && hoveringEnemy[1] === j && !visitedEnemy.includes('' + i + j)}
 								<i class="fa-solid fa-circle-dot"></i>
@@ -194,20 +147,24 @@
 	</div>
 	<div class="ship-selection-container">
 		{#each ships as ship, i}
-			<button
-				class="ship-container"
-				class:selected={selectedShip === ship}
-				on:click={() => handleClickShip(ship.name)}
-			>
-				<div class="image-container">
-					<img src={ship.image} alt={ship.image} />
-				</div>
-				<div class="dots" class:vertical={dotsDirection === Direction.vertical}>
-					{#each { length: ship.size } as s}
-						<i class="fa-solid fa-circle-dot" style={`color: ${ship.color}`}></i>
-					{/each}
-				</div>
-			</button>
+			{#key ship.designated}
+				<button
+					class="ship-container"
+					class:selected={selectedShip === ship}
+					class:disabled={ship.designated}
+					on:click={() => handleClickShip(ship.name)}
+					disabled={ship.designated}
+				>
+					<div class="image-container">
+						<img src={ship.image} alt={ship.image} />
+					</div>
+					<div class="dots" class:vertical={dotsDirection === Direction.vertical}>
+						{#each { length: ship.size } as s}
+							<i class="fa-solid fa-circle-dot" style={`color: ${ship.color}`}></i>
+						{/each}
+					</div>
+				</button>
+			{/key}
 		{/each}
 		<button class="rotate" on:click={() => handleRotate()}
 			><i class="fa-solid fa-rotate-right"></i></button
