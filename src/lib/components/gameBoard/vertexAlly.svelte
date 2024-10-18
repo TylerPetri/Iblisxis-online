@@ -3,6 +3,7 @@
 	import type { Ship } from '$lib/types/interface';
 
 	export let idx: number[];
+	export let neighbours: number[][] = []
 	export let color = 'rgb(116, 21, 32)';
 	export let selectedShip: Ship | undefined = undefined;
 	export let hovering = false;

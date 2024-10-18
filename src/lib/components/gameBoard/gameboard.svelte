@@ -1,6 +1,6 @@
 <script lang="ts">
-	import NodeAlly from './nodeAlly.svelte';
-	import NodeEnemy from './nodeEnemy.svelte';
+	import VertexAlly from './vertexAlly.svelte';
+	import VertexEnemy from './vertexEnemy.svelte';
 
 	import { Direction, Player } from '$lib/types/enum';
 	import type { Ship } from '$lib/types/interface';
@@ -92,7 +92,7 @@
 			{#each rows as row, i}
 				<div class="row">
 					{#each columns as col, j}
-						<NodeAlly
+						<VertexAlly
 							idx={[i, j]}
 							bind:inBattlefieldAlly
 							bind:hoveringIdx
@@ -110,7 +110,7 @@
 			{#each rows as row, i}
 				<div class="row">
 					{#each columns as col, j}
-						<NodeEnemy bind:inBattlefieldEnemy />
+						<VertexEnemy bind:inBattlefieldEnemy />
 					{/each}
 				</div>
 			{/each}

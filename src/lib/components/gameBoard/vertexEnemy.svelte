@@ -4,6 +4,7 @@
 
   let visited: boolean = false
   let hovering: boolean = false
+	let neighbours: number[][] = []
 
   $: if (hovering) {
 		inBattlefieldEnemy = true;
