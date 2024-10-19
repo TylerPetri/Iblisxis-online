@@ -2,7 +2,7 @@
 	import VertexAlly from './vertexAlly.svelte';
 	import VertexEnemy from './vertexEnemy.svelte';
 
-	import { Direction, Player } from '$lib/types/enum';
+	import { Direction } from '$lib/types/enum';
 	import type { Ship } from '$lib/types/interface';
 
 	import aircraftCarrier from '$lib/assets/ships/aircraft-carrier.png';
@@ -23,7 +23,12 @@
 	let hoveringIdx: number[] = [];
 	let hoveringSelectedShipList: number[] = [];
 
-	const ships = [
+	let placingShip: boolean = false;
+	let authShipPlacement: boolean[] = [];
+
+	let designatedShipsCount: number = 0;
+
+	let ships = [
 		{
 			name: 'aircraft-carrier',
 			image: aircraftCarrier,
@@ -73,6 +78,16 @@
 		dotsDirection === Direction.horizontal
 			? (dotsDirection = Direction.vertical)
 			: (dotsDirection = Direction.horizontal);
+	}
+
+	$: if (selectedShip && authShipPlacement.length < selectedShip.size) {
+		while (authShipPlacement.length < selectedShip.size) {
+			authShipPlacement.push(false);
+		}
+	} else if (selectedShip && authShipPlacement.length > selectedShip.size) {
+		while (authShipPlacement.length > selectedShip.size) {
+			authShipPlacement.pop();
+		}
 	}
 
 	$: if (selectedShip && hoveringIdx) {
@@ -146,15 +161,19 @@
 					{#each columns as col, j}
 						<VertexAlly
 							idx={[i, j]}
+							bind:authShipPlacement
 							bind:hoveringIdx
-							hoveringSelectedShip={hoveringSelectedShipList &&
-								(dotsDirection === Direction.horizontal
-									? hoveringSelectedShipList[0] === i &&
-										hoveringSelectedShipList.slice(1, hoveringSelectedShipList.length).includes(j)
-									: hoveringSelectedShipList[0] === j &&
-										hoveringSelectedShipList.slice(1, hoveringSelectedShipList.length).includes(i))}
+							hoveringSelectedShipIdx={hoveringSelectedShipList &&
+								(dotsDirection === Direction.horizontal && hoveringSelectedShipList[0] === i
+									? hoveringSelectedShipList.slice(1, hoveringSelectedShipList.length).indexOf(j)
+									: dotsDirection === Direction.vertical && hoveringSelectedShipList[0] === j
+										? hoveringSelectedShipList.slice(1, hoveringSelectedShipList.length).indexOf(i)
+										: -1)}
 							bind:inBattlefieldAlly
 							bind:selectedShip
+							bind:placingShip
+							bind:ships
+							bind:designatedShipsCount
 						/>
 					{/each}
 				</div>
@@ -171,31 +190,33 @@
 			{/each}
 		</div>
 	</div>
-	<div class="ship-selection-container">
-		{#each ships as ship, i}
-			{#key ship.designated}
-				<button
-					class="ship-container"
-					class:selected={selectedShip === ship}
-					class:disabled={ship.designated}
-					on:click={() => handleClickShip(ship.name)}
-					disabled={ship.designated}
-				>
-					<div class="image-container">
-						<img src={ship.image} alt={ship.image} />
-					</div>
-					<div class="dots" class:vertical={dotsDirection === Direction.vertical}>
-						{#each { length: ship.size } as s}
-							<i class="fa-solid fa-circle-dot" style={`color: ${ship.color}`}></i>
-						{/each}
-					</div>
-				</button>
-			{/key}
-		{/each}
-		<button class="rotate" on:click={() => handleRotate()}
-			><i class="fa-solid fa-arrows-spin"></i></button
-		>
-	</div>
+	{#if designatedShipsCount !== ships.length}
+		<div class="ship-selection-container">
+			{#each ships as ship, i}
+				{#key ship.designated}
+					<button
+						class="ship-container"
+						class:selected={selectedShip === ship}
+						class:disabled={ship.designated}
+						on:click={() => handleClickShip(ship.name)}
+						disabled={ship.designated}
+					>
+						<div class="image-container">
+							<img src={ship.image} alt={ship.image} />
+						</div>
+						<div class="dots" class:vertical={dotsDirection === Direction.vertical}>
+							{#each { length: ship.size } as s}
+								<i class="fa-solid fa-circle-dot" style={`color: ${ship.color}`}></i>
+							{/each}
+						</div>
+					</button>
+				{/key}
+			{/each}
+			<button class="rotate" on:click={() => handleRotate()}
+				><i class="fa-solid fa-arrows-spin"></i></button
+			>
+		</div>
+	{/if}
 </div>
 
 <style lang="scss">

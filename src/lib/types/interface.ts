@@ -3,4 +3,5 @@ export interface Ship {
   image: string;
   size: number;
   color: string;
+  designated: boolean;
 }
