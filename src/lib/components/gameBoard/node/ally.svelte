@@ -13,9 +13,18 @@
 	export let authShipPlacement: boolean[];
 
 	export let ships: Ship[];
-	export let designatedShipsCount: number
+	export let designatedShipsCount: number;
+
+	export let enemyFiresToIdx: string | undefined;
 
 	let designatedNodeData: Ship | null = null;
+	let hit: boolean = false;
+
+	$: if (enemyFiresToIdx) {
+		if (enemyFiresToIdx === '' + idx[0] + idx[1]) {
+			hit = true;
+		}
+	}
 
 	$: if (hovering) {
 		hoveringIdx = idx;
@@ -33,7 +42,7 @@
 
 					const shipIdx = ships.indexOf(selectedShip);
 					ships[shipIdx].designated = true;
-					designatedShipsCount++
+					designatedShipsCount++;
 
 					selectedShip = undefined;
 				}
@@ -50,7 +59,9 @@
 
 <button
 	class="node"
-	on:mouseover={() => (hovering = true)}
+	on:mouseover={() => {
+		if (designatedShipsCount !== ships.length) hovering = true;
+	}}
 	on:mouseleave={() => {
 		hovering = false;
 		placingShip = false;
@@ -58,11 +69,14 @@
 	on:focus
 	on:blur
 	on:click={() => (placingShip = true)}
+	disabled={designatedShipsCount === ships.length}
 >
 	{#if inBattlefieldAlly && (hovering || hoveringSelectedShipIdx !== -1) && designatedNodeData === null}
 		<i class="fa-solid fa-circle-dot" style={`color: ${color}`}></i>
 	{:else if designatedNodeData !== null}
 		<i class="fa-solid fa-circle-dot" style={`color: ${designatedNodeData.color}`}></i>
+	{:else if hit}
+		<i class="fa-regular fa-circle-dot" style={`color: #434040`}></i>
 	{:else}
 		<i class="fa-regular fa-circle-dot"></i>
 	{/if}

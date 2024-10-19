@@ -1,8 +1,9 @@
 <script lang="ts">
+	import Jumbotron from './jumbotron/jumbotron.svelte';
 	import NodeAlly from './node/ally.svelte';
 	import NodeEnemy from './node/enemy.svelte';
 
-	import { Direction } from '$lib/types/enum';
+	import { Direction, Player } from '$lib/types/enum';
 	import type { Ship } from '$lib/types/interface';
 
 	import aircraftCarrier from '$lib/assets/ships/aircraft-carrier.png';
@@ -52,11 +53,11 @@
 	});
 
 	import enemyShipPlacements from '$lib/db/mockEnemyShipPlacement.json';
-	import { enemyShipPlacementController } from '$lib/db/controllers/enemyShips';
+	import { enemyShipCoordsFill } from '$lib/db/controllers/enemyShips';
 	const enemyShips = enemyShipPlacements.ships;
 	const enemyCoords = enemyShips.map((ship) => {
-		return enemyShipPlacementController(ship);
-});
+		return enemyShipCoordsFill(ship);
+	});
 
 	function handleClickShip(shipName: string) {
 		if (selectedShip?.name === shipName) {
@@ -143,11 +144,52 @@
 			}
 		}
 	}
+
+	let whosTurn: Player = Player.ally
+	let exclude: string[] = []
+	let enemyFiresToIdx: string | undefined = undefined 
+	$: if (whosTurn === Player.enemy) {
+		setTimeout(() => {
+			function generateRandom(){
+				const row = Math.floor(Math.random() * 9)
+				const column = Math.floor(Math.random() * 9)
+				const idx = '' + row + column
+				if (exclude.includes(idx)) {
+					generateRandom()
+				} else {
+					exclude.push(idx)
+					return idx
+				}
+			}
+			enemyFiresToIdx = generateRandom()
+			whosTurn = Player.ally
+		}, 1000)
+	}
 </script>
 
 <div class="wrapper">
 	<div class="boardgame-container">
-		<div class="ally-board" on:mouseleave={() => (inBattlefieldAlly = false)} role="table">
+		{#if designatedShipsCount === enemyShips.length}
+			<Jumbotron />
+			<div class="enemy-board" on:mouseleave={() => (inBattlefieldEnemy = false)} role="table">
+				{#each rows as row, i}
+					<div class="row">
+						{#each columns as col, j}
+							<NodeEnemy
+								bind:inBattlefieldEnemy
+								ship={enemyShips[
+									enemyCoords.findIndex(
+										(x) => x.coords?.row.includes(i) && x.coords.column.includes(j)
+									)
+								]}
+								bind:whosTurn
+							/>
+						{/each}
+					</div>
+				{/each}
+			</div>
+		{/if}
+		<div class="ally-board" class:border={designatedShipsCount === ships.length} on:mouseleave={() => (inBattlefieldAlly = false)} role="table">
 			{#each rows as row, i}
 				<div class="row">
 					{#each columns as col, j}
@@ -166,25 +208,14 @@
 							bind:placingShip
 							bind:ships
 							bind:designatedShipsCount
-						/>
-					{/each}
-				</div>
-			{/each}
-		</div>
-		<div class="divider" />
-		<div class="enemy-board" on:mouseleave={() => (inBattlefieldEnemy = false)} role="table">
-			{#each rows as row, i}
-				<div class="row">
-					{#each columns as col, j}
-						<NodeEnemy
-							bind:inBattlefieldEnemy
-							ship={enemyShips[enemyCoords.findIndex(x => x.coords?.row.includes(i) && x.coords.column.includes(j))]}
+							{enemyFiresToIdx}
 						/>
 					{/each}
 				</div>
 			{/each}
 		</div>
 	</div>
+
 	{#if designatedShipsCount !== ships.length}
 		<div class="ship-selection-container">
 			{#each ships as ship, i}
