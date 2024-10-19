@@ -20,6 +20,9 @@
 	let dotsDirection = Direction.horizontal;
 	let selectedShip: Ship | undefined = undefined;
 
+	let hoveringIdx: number[] = [];
+	let hoveringSelectedShipList: number[] = [];
+
 	const ships = [
 		{
 			name: 'aircraft-carrier',
@@ -72,11 +75,67 @@
 			: (dotsDirection = Direction.horizontal);
 	}
 
-	let selectedShipSizeCount: number = 0
-	let nextSelectShipIdx: number[] | undefined = undefined
-	$: if (selectedShip) selectedShipSizeCount = selectedShip.size - 1
-	$: console.log(nextSelectShipIdx)
-	// todo: its not working yet
+	$: if (selectedShip && hoveringIdx) {
+		let size = selectedShip.size - 1;
+		if (dotsDirection === Direction.horizontal) {
+			let rightNodes = 9 - hoveringIdx[1];
+			let leftNodes = 0 + hoveringIdx[1];
+			// fits, done
+			if (rightNodes >= size) {
+				hoveringSelectedShipList = [hoveringIdx[0], hoveringIdx[1]];
+				while (size > 0) {
+					hoveringSelectedShipList = [...hoveringSelectedShipList, hoveringIdx[1] + size];
+					size--;
+				}
+			}
+			// doesnt fit, add the difference to the left
+			if (rightNodes < size) {
+				let difference = size - rightNodes;
+				if (leftNodes >= difference) {
+					hoveringSelectedShipList = [hoveringIdx[0], hoveringIdx[1]];
+					while (difference > 0 || rightNodes > 0) {
+						if (difference > 0) {
+							hoveringSelectedShipList = [...hoveringSelectedShipList, hoveringIdx[1] - difference];
+							difference--;
+						}
+						if (rightNodes > 0) {
+							hoveringSelectedShipList = [...hoveringSelectedShipList, hoveringIdx[1] + rightNodes];
+							rightNodes--;
+						}
+					}
+				}
+			}
+		}
+		if (dotsDirection === Direction.vertical) {
+			let nodesBelow = 9 - hoveringIdx[0];
+			let nodesAbove = 0 + hoveringIdx[0];
+			// fits, done
+			if (nodesBelow >= size) {
+				hoveringSelectedShipList = [hoveringIdx[1], hoveringIdx[0]];
+				while (size > 0) {
+					hoveringSelectedShipList = [...hoveringSelectedShipList, hoveringIdx[0] + size];
+					size--;
+				}
+			}
+			// doesnt fit, add the difference to the left
+			if (nodesBelow < size) {
+				let difference = size - nodesBelow;
+				if (nodesAbove >= difference) {
+					hoveringSelectedShipList = [hoveringIdx[1], hoveringIdx[0]];
+					while (difference > 0 || nodesBelow > 0) {
+						if (difference > 0) {
+							hoveringSelectedShipList = [...hoveringSelectedShipList, hoveringIdx[0] - difference];
+							difference--;
+						}
+						if (nodesBelow > 0) {
+							hoveringSelectedShipList = [...hoveringSelectedShipList, hoveringIdx[0] + nodesBelow];
+							nodesBelow--;
+						}
+					}
+				}
+			}
+		}
+	}
 </script>
 
 <div class="wrapper">
@@ -87,11 +146,15 @@
 					{#each columns as col, j}
 						<VertexAlly
 							idx={[i, j]}
+							bind:hoveringIdx
+							hoveringSelectedShip={hoveringSelectedShipList &&
+								(dotsDirection === Direction.horizontal
+									? hoveringSelectedShipList[0] === i &&
+										hoveringSelectedShipList.slice(1, hoveringSelectedShipList.length).includes(j)
+									: hoveringSelectedShipList[0] === j &&
+										hoveringSelectedShipList.slice(1, hoveringSelectedShipList.length).includes(i))}
 							bind:inBattlefieldAlly
-							bind:nextSelectShipIdx
 							bind:selectedShip
-							bind:selectedShipSizeCount
-							{dotsDirection}
 						/>
 					{/each}
 				</div>
