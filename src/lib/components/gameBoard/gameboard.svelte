@@ -1,6 +1,6 @@
 <script lang="ts">
-	import VertexAlly from './vertexAlly.svelte';
-	import VertexEnemy from './vertexEnemy.svelte';
+	import NodeAlly from './node/ally.svelte';
+	import NodeEnemy from './node/enemy.svelte';
 
 	import { Direction } from '$lib/types/enum';
 	import type { Ship } from '$lib/types/interface';
@@ -28,43 +28,35 @@
 
 	let designatedShipsCount: number = 0;
 
-	let ships = [
-		{
-			name: 'aircraft-carrier',
-			image: aircraftCarrier,
-			size: 5,
-			color: 'orange',
-			designated: false
-		},
-		{
-			name: 'battleship',
-			image: battleship,
-			size: 4,
-			color: 'red',
-			designated: false
-		},
-		{
-			name: 'cruiser',
-			image: cruiser,
-			size: 3,
-			color: 'grey',
-			designated: false
-		},
-		{
-			name: 'submarine',
-			image: submarine,
-			size: 3,
-			color: 'green',
-			designated: false
-		},
-		{
-			name: 'destroyer',
-			image: destroyer,
-			size: 2,
-			color: 'purple',
-			designated: false
+	import shipsDB from '$lib/db/ships.json';
+	let ships = shipsDB.ships.map((ship) => {
+		switch (ship.name) {
+			case 'aircraftCarrier':
+				ship.image = aircraftCarrier;
+				return ship;
+			case 'battleship':
+				ship.image = battleship;
+				return ship;
+			case 'cruiser':
+				ship.image = cruiser;
+				return ship;
+			case 'destroyer':
+				ship.image = destroyer;
+				return ship;
+			case 'submarine':
+				ship.image = submarine;
+				return ship;
+			default:
+				return ship;
 		}
-	];
+	});
+
+	import enemyShipPlacements from '$lib/db/mockEnemyShipPlacement.json';
+	import { enemyShipPlacementController } from '$lib/db/controllers/enemyShips';
+	const enemyShips = enemyShipPlacements.ships;
+	const enemyCoords = enemyShips.map((ship) => {
+		return enemyShipPlacementController(ship);
+});
 
 	function handleClickShip(shipName: string) {
 		if (selectedShip?.name === shipName) {
@@ -159,7 +151,7 @@
 			{#each rows as row, i}
 				<div class="row">
 					{#each columns as col, j}
-						<VertexAlly
+						<NodeAlly
 							idx={[i, j]}
 							bind:authShipPlacement
 							bind:hoveringIdx
@@ -184,7 +176,10 @@
 			{#each rows as row, i}
 				<div class="row">
 					{#each columns as col, j}
-						<VertexEnemy bind:inBattlefieldEnemy />
+						<NodeEnemy
+							bind:inBattlefieldEnemy
+							ship={enemyShips[enemyCoords.findIndex(x => x.coords?.row.includes(i) && x.coords.column.includes(j))]}
+						/>
 					{/each}
 				</div>
 			{/each}
