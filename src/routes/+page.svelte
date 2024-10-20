@@ -5,7 +5,9 @@
 <div class="wrapper">
 	<div class="container">
 		<img src={logo} alt="Battleship" />
-		<h1 class='noto-serif-kr-title'>곧 출시 예정</h1>
+		<div class="tag-container">
+			<a class="try-alpha" href="/gameboard"> <h1 class="noto-serif-kr-title">알파 플레이</h1></a>
+		</div>
 	</div>
 </div>
 
@@ -32,9 +34,27 @@
 		font-style: normal;
 	}
 
-	h1 {
-		width: max-content;
-		margin: 25px auto;
-		font-size: 66px;
+	.tag-container {
+		border: 2px solid rgb(124, 204, 228);
+		height: min-content;
+
+		&:hover {
+			background-color: rgb(179, 215, 226);
+		}
+		a {
+			height: min-content;
+			text-decoration: none;
+			color: rgb(116, 21, 32);
+
+			&:focus {
+				color: rgb(116, 21, 32);
+			}
+
+			h1 {
+				width: max-content;
+				margin: 0 auto;
+				font-size: 66px;
+			}
+		}
 	}
 </style>
