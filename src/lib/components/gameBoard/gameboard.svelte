@@ -3,7 +3,7 @@
 	import NodeAlly from './node/ally.svelte';
 	import NodeEnemy from './node/enemy.svelte';
 
-	import { Direction, Player } from '$lib/types/enum';
+	import { Direction, GameActions, Player } from '$lib/types/enum';
 	import type { Ship } from '$lib/types/interface';
 
 	import aircraftCarrier from '$lib/assets/ships/aircraft-carrier.png';
@@ -28,6 +28,8 @@
 	let authShipPlacement: boolean[] = [];
 
 	let designatedShipsCount: number = 0;
+	let shipNodeCountAlly: number = 0;
+	let shipNodeCountEnemy: number = 0;
 
 	import shipsDB from '$lib/db/ships.json';
 	let ships = shipsDB.ships.map((ship) => {
@@ -51,6 +53,13 @@
 				return ship;
 		}
 	});
+
+	if (ships.length) {
+		ships.forEach((ship) => {
+			shipNodeCountAlly += ship.size;
+			shipNodeCountEnemy += ship.size;
+		});
+	}
 
 	import enemyShipPlacements from '$lib/db/mockEnemyShipPlacement.json';
 	import { enemyShipCoordsFill } from '$lib/db/controllers/enemyShips';
@@ -145,32 +154,67 @@
 		}
 	}
 
-	let whosTurn: Player = Player.ally
-	let exclude: string[] = []
-	let enemyFiresToIdx: string | undefined = undefined 
-	$: if (whosTurn === Player.enemy) {
+	let hitOrMiss: GameActions.hit | GameActions.miss | undefined = undefined;
+	let whosTurn: Player | undefined = undefined;
+	let exclude: string[] = [];
+	let enemyFiresToIdx: string | undefined = undefined;
+	$: if (whosTurn === Player.enemy && shipNodeCountAlly !==0 && shipNodeCountEnemy !== 0) {
 		setTimeout(() => {
-			function generateRandom(){
-				const row = Math.floor(Math.random() * 9)
-				const column = Math.floor(Math.random() * 9)
-				const idx = '' + row + column
-				if (exclude.includes(idx)) {
-					generateRandom()
+			function generateRandom(count: number = 0) {
+				const row = Math.floor(Math.random() * 9);
+				const column = Math.floor(Math.random() * 9);
+				const idx = '' + row + column;
+
+				let throttlecount = 0;
+
+				if (throttlecount >= 10) {
+					for (let i = 0; i < exclude.length; i++) {
+						const x = parseInt(idx) + 1;
+						const y = '' + x;
+						if (!exclude.includes(y) && x < 100 && x > 0) {
+							exclude.push(y);
+							return y;
+						}
+					}
+				}
+
+				if (exclude.includes(idx) && throttlecount < 10) {
+					count++;
+					generateRandom(count);
 				} else {
-					exclude.push(idx)
-					return idx
+					exclude.push(idx);
+					return idx;
 				}
 			}
-			enemyFiresToIdx = generateRandom()
-			whosTurn = Player.ally
-		}, 1000)
+			enemyFiresToIdx = generateRandom();
+			whosTurn = Player.ally;
+		}, 1000);
+	}
+
+	let jumbotronScenario: GameActions;
+	$: if (designatedShipsCount === ships.length) {
+		jumbotronScenario = GameActions.start;
+		if (!whosTurn) whosTurn = Player.ally
+
+		if (hitOrMiss === GameActions.hit) {
+			jumbotronScenario = GameActions.hit;
+		} else if (hitOrMiss === GameActions.miss) {
+			jumbotronScenario = GameActions.miss;
+		}
+
+		if (shipNodeCountAlly === 0) {
+			jumbotronScenario = GameActions.youLose;
+		}
+		if (shipNodeCountEnemy === 0) {
+			jumbotronScenario = GameActions.youWin;
+		}
 	}
 </script>
 
 <div class="wrapper">
 	<div class="boardgame-container">
 		{#if designatedShipsCount === enemyShips.length}
-			<Jumbotron />
+			<Jumbotron scenario={jumbotronScenario} {hitOrMiss} {whosTurn} />
 			<div class="enemy-board" on:mouseleave={() => (inBattlefieldEnemy = false)} role="table">
 				{#each rows as row, i}
 					<div class="row">
@@ -182,14 +226,21 @@
 										(x) => x.coords?.row.includes(i) && x.coords.column.includes(j)
 									)
 								]}
+								bind:hitOrMiss
 								bind:whosTurn
+								bind:shipNodeCountEnemy
 							/>
 						{/each}
 					</div>
 				{/each}
 			</div>
 		{/if}
-		<div class="ally-board" class:border={designatedShipsCount === ships.length} on:mouseleave={() => (inBattlefieldAlly = false)} role="table">
+		<div
+			class="ally-board"
+			class:border={designatedShipsCount === ships.length}
+			on:mouseleave={() => (inBattlefieldAlly = false)}
+			role="table"
+		>
 			{#each rows as row, i}
 				<div class="row">
 					{#each columns as col, j}
@@ -203,11 +254,13 @@
 									: dotsDirection === Direction.vertical && hoveringSelectedShipList[0] === j
 										? hoveringSelectedShipList.slice(1, hoveringSelectedShipList.length).indexOf(i)
 										: -1)}
+							bind:hitOrMiss
 							bind:inBattlefieldAlly
 							bind:selectedShip
 							bind:placingShip
 							bind:ships
 							bind:designatedShipsCount
+							bind:shipNodeCountAlly
 							{enemyFiresToIdx}
 						/>
 					{/each}

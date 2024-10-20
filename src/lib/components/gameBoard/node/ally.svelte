@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { GameActions } from '$lib/types/enum';
 	import type { Ship } from '$lib/types/interface';
 
 	export let idx: number[];
@@ -16,13 +17,21 @@
 	export let designatedShipsCount: number;
 
 	export let enemyFiresToIdx: string | undefined;
+	export let shipNodeCountAlly: number;
+	export let hitOrMiss: GameActions.hit | GameActions.miss | undefined;
 
 	let designatedNodeData: Ship | null = null;
-	let hit: boolean = false;
+	let visited: boolean = false;
 
 	$: if (enemyFiresToIdx) {
 		if (enemyFiresToIdx === '' + idx[0] + idx[1]) {
-			hit = true;
+			visited = true;
+			if (designatedNodeData !== null) {
+				hitOrMiss = GameActions.hit;
+				shipNodeCountAlly--;
+			} else {
+				hitOrMiss = GameActions.miss;
+			}
 		}
 	}
 
@@ -74,8 +83,12 @@
 	{#if inBattlefieldAlly && (hovering || hoveringSelectedShipIdx !== -1) && designatedNodeData === null}
 		<i class="fa-solid fa-circle-dot" style={`color: ${color}`}></i>
 	{:else if designatedNodeData !== null}
-		<i class="fa-solid fa-circle-dot" style={`color: ${designatedNodeData.color}`}></i>
-	{:else if hit}
+		{#if !visited}
+			<i class="fa-solid fa-circle-dot" style={`color: ${designatedNodeData.color}`}></i>
+		{:else if visited}
+			<i class="fa-solid fa-x" style={`color: ${designatedNodeData.color}`}></i>
+		{/if}
+	{:else if visited && designatedNodeData === null}
 		<i class="fa-regular fa-circle-dot" style={`color: #434040`}></i>
 	{:else}
 		<i class="fa-regular fa-circle-dot"></i>

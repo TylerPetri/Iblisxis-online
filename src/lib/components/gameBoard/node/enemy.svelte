@@ -1,10 +1,12 @@
 <script lang="ts">
-	import { Player } from '$lib/types/enum';
+	import { GameActions, Player } from '$lib/types/enum';
 	import type { Ship } from '$lib/types/interface';
 	export let color = 'rgb(116, 21, 32)';
 	export let inBattlefieldEnemy: boolean = false;
 	export let ship: Ship | undefined = undefined;
-	export let whosTurn: Player;
+	export let whosTurn: Player | undefined;
+	export let hitOrMiss: GameActions.hit | GameActions.miss | undefined;
+	export let shipNodeCountEnemy: number;
 
 	let visited: boolean = false;
 	let hovering: boolean = false;
@@ -18,6 +20,12 @@
 	class="node"
 	on:click={() => {
 		if (whosTurn === Player.ally) {
+			if (ship) {
+				shipNodeCountEnemy--
+				hitOrMiss = GameActions.hit
+			} else {
+				hitOrMiss = GameActions.miss
+			}
 			visited = true;
 			whosTurn = Player.enemy;
 		}

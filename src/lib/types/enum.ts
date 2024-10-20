@@ -1,8 +1,12 @@
 export enum GameActions {
-  waiting = 'waiting',
-  start = 'start',
-  yourTurn = 'yourTurn',
-  opponentTurn = 'opponentTurn'
+  hit = 'Hit',
+  miss = 'Miss',
+  opponentTurn = 'OpponentTurn',
+  start = 'Game Start!',
+  waiting = 'Waiting',
+  youLose = 'Your Dead Haha',
+  youWin = 'Winner!',
+  yourTurn = 'Your Turn',
 }
 
 export enum Direction {
