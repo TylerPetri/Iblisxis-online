@@ -12,6 +12,8 @@
 	import destroyer from '$lib/assets/ships/destroyer.png';
 	import submarine from '$lib/assets/ships/submarine.png';
 
+	export let ships: Ship[];
+
 	const columns: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 	const rows: string[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
@@ -31,33 +33,30 @@
 	let shipNodeCountAlly: number = 0;
 	let shipNodeCountEnemy: number = 0;
 
-	import shipsDB from '$lib/db/ships.json';
-	let ships = shipsDB.ships.map((ship) => {
-		switch (ship.name) {
-			case 'aircraftCarrier':
-				ship.image = aircraftCarrier;
-				return ship;
-			case 'battleship':
-				ship.image = battleship;
-				return ship;
-			case 'cruiser':
-				ship.image = cruiser;
-				return ship;
-			case 'destroyer':
-				ship.image = destroyer;
-				return ship;
-			case 'submarine':
-				ship.image = submarine;
-				return ship;
-			default:
-				return ship;
-		}
-	});
-
 	if (ships.length) {
 		ships.forEach((ship) => {
 			shipNodeCountAlly += ship.size;
 			shipNodeCountEnemy += ship.size;
+
+			switch (ship.name) {
+				case 'aircraftCarrier':
+					ship.image = aircraftCarrier;
+					return ship;
+				case 'battleship':
+					ship.image = battleship;
+					return ship;
+				case 'cruiser':
+					ship.image = cruiser;
+					return ship;
+				case 'destroyer':
+					ship.image = destroyer;
+					return ship;
+				case 'submarine':
+					ship.image = submarine;
+					return ship;
+				default:
+					return ship;
+			}
 		});
 	}
 
@@ -158,7 +157,7 @@
 	let whosTurn: Player | undefined = undefined;
 	let exclude: string[] = [];
 	let enemyFiresToIdx: string | undefined = undefined;
-	$: if (whosTurn === Player.enemy && shipNodeCountAlly !==0 && shipNodeCountEnemy !== 0) {
+	$: if (whosTurn === Player.enemy && shipNodeCountAlly !== 0 && shipNodeCountEnemy !== 0) {
 		setTimeout(() => {
 			function generateRandom(count: number = 0) {
 				const row = Math.floor(Math.random() * 9);
@@ -194,7 +193,7 @@
 	let jumbotronScenario: GameActions;
 	$: if (designatedShipsCount === ships.length) {
 		jumbotronScenario = GameActions.start;
-		if (!whosTurn) whosTurn = Player.ally
+		if (!whosTurn) whosTurn = Player.ally;
 
 		if (hitOrMiss === GameActions.hit) {
 			jumbotronScenario = GameActions.hit;

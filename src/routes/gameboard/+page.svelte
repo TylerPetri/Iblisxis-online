@@ -1,9 +1,11 @@
 <script lang="ts">
 	import Gameboard from '$lib/components/gameBoard/gameboard.svelte';
+
+	export let data
 </script>
 
 <div class="wrapper">
-	<Gameboard />
+	<Gameboard ships={JSON.parse(data.body)}/>
 </div>
 
 <style lang="scss">
