@@ -6,3 +6,34 @@ datasource db {
   provider = "cockroachdb"
   url      = env("DATABASE_URL")
 }
+
+model player_ship_placements {
+  id        BigInt  @id @default(autoincrement())
+  player_id BigInt
+  placement BigInt
+  players   players @relation(fields: [player_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_player")
+
+  @@index([placement], map: "player_ship_placements_placement")
+  @@index([player_id], map: "player_ship_placements_player_id")
+}
+
+model players {
+  id                     BigInt                   @id @default(autoincrement())
+  name                   String
+  email                  String?
+  player_ship_placements player_ship_placements[]
+}
+
+model ships {
+  id         BigInt   @id @default(autoincrement())
+  name       String
+  size       BigInt
+  color      String
+  direction  String?
+  image      String?
+  designated Boolean?
+}
+
+enum crdb_internal_region {
+  gcp_us_east1 @map("gcp-us-east1")
+}
