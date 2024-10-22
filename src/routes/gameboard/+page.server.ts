@@ -1,7 +1,5 @@
-import prisma from '$lib/prisma'
+import { handler } from '$lib/server/queries/getShips'
 
 export async function load() {
-  const allShips = await prisma.ships.findMany()
-
-  return {statuscode: 200, body: JSON.stringify(allShips, (key,value) => typeof value === 'bigint' ? value.toString() : value)}
+  return await handler()
 }
