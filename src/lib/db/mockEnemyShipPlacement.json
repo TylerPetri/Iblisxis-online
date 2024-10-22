@@ -1,7 +1,7 @@
 {
   "ships": [
 		{
-			"name": "aircraft-carrier",
+			"name": "aircraftCarrier",
 			"size": 5,
 			"color": "orange",
       "direction": "horizontal",
