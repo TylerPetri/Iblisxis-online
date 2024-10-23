@@ -1,5 +1,15 @@
-import { handler } from '../../../netlify/functions/getShips'
+// import { handler } from '../../../netlify/functions/getShips'
+
+import prisma from '$lib/prisma'
 
 export async function load() {
-  return await handler()
+  // return await handler()
+  const allShips = await prisma.ships.findMany();
+
+	return {
+		statusCode: 200,
+		body: JSON.stringify(allShips, (key, value) =>
+			typeof value === 'bigint' ? value.toString() : value
+		)
+	};
 }
