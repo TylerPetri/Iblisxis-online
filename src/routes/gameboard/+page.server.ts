@@ -9,7 +9,7 @@ export async function load() {
 	return {
 		statusCode: 200,
 		body: JSON.stringify(allShips, (key, value) =>
-			typeof value === 'bigint' ? value.toString() : value
+			typeof value === 'bigint' ? Number(value) : value
 		)
 	};
 }
