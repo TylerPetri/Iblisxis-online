@@ -5,7 +5,7 @@
 </script>
 
 <div class="wrapper">
-	<Gameboard ships={JSON.parse(data.body)}/>
+	<Gameboard ships={JSON.parse(data.body.ships)} enemyShips={JSON.parse(data.body.enemyShipPlacement)}/>
 </div>
 
 <style lang="scss">

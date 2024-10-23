@@ -7,31 +7,47 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model player_ship_placements {
-  id        BigInt  @id @default(autoincrement())
+model enemy_ship_placements {
+  id        BigInt  @id @unique @default(autoincrement())
+  ship_id   BigInt  @unique
+  row       BigInt
+  col       BigInt
+  direction String  @db.String(255)
   player_id BigInt
-  placement BigInt
-  players   players @relation(fields: [player_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_player")
+  match_id  BigInt
+  ships     ships   @relation(fields: [ship_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "enemy_ship_placements_fk1")
+  players   players @relation(fields: [player_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "enemy_ship_placements_fk4")
+  matches   matches @relation(fields: [match_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "enemy_ship_placements_fk5")
+}
 
-  @@index([placement], map: "player_ship_placements_placement")
-  @@index([player_id], map: "player_ship_placements_player_id")
+model matches {
+  id                                  BigInt                  @id @unique @default(autoincrement())
+  player1_id                          BigInt
+  player2_id                          BigInt
+  enemy_ship_placements               enemy_ship_placements[]
+  players_matches_player1_idToplayers players                 @relation("matches_player1_idToplayers", fields: [player1_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "matches_fk1")
+  players_matches_player2_idToplayers players                 @relation("matches_player2_idToplayers", fields: [player2_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "matches_fk2")
 }
 
 model players {
-  id                     BigInt                   @id @default(autoincrement())
-  name                   String
-  email                  String?
-  player_ship_placements player_ship_placements[]
+  id                                  BigInt                  @id @unique @default(autoincrement())
+  name                                String                  @db.String(255)
+  email                               String?                 @db.String(255)
+  password                            String?                 @db.String(255)
+  logged_in                           Boolean                 @default(false)
+  user_token                          String?                 @db.String(255)
+  token_expiration                    DateTime?               @db.Timestamp(6)
+  enemy_ship_placements               enemy_ship_placements[]
+  matches_matches_player1_idToplayers matches[]               @relation("matches_player1_idToplayers")
+  matches_matches_player2_idToplayers matches[]               @relation("matches_player2_idToplayers")
 }
 
 model ships {
-  id         BigInt   @id @default(autoincrement())
-  name       String
-  size       BigInt
-  color      String
-  direction  String?
-  image      String?
-  designated Boolean?
+  id                    BigInt                 @id @unique @default(autoincrement())
+  name                  String                 @unique @db.String(255)
+  size                  BigInt
+  color                 String                 @unique @db.String(255)
+  enemy_ship_placements enemy_ship_placements?
 }
 
 enum crdb_internal_region {

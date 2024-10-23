@@ -1,15 +1,18 @@
-import type { Ship } from '$lib/types/interface'
 import { Direction } from '$lib/types/enum'
+import type { EnemyShipPlacement } from '$lib/types/interface'
 
-export function enemyShipCoordsFill(ship: Ship) {
+export function enemyShipCoordsFill(ship: EnemyShipPlacement) {
+  ship.col = new Array(1).fill(ship.col)
+  ship.row = new Array(1).fill(ship.row)
+  const shipSize = Number(ship.ships.size)
   if (ship.direction === Direction.horizontal) {
-    for (let i = 0; i < ship.size - 1; i++){
-      ship.coords?.column.push(ship.coords.column[0] + i + 1)
+    for (let i = 0; i < shipSize - 1; i++){
+      ship.col?.push(ship.col[0] + i + 1)
     }
   }
   if (ship.direction === Direction.vertical) {
-    for (let i = 0; i < ship.size - 1; i++){
-      ship.coords?.row.push(ship.coords.row[0] + i)
+    for (let i = 0; i < shipSize - 1; i++){
+      ship.row?.push(ship.row[0] + i)
     }
   }
   return ship

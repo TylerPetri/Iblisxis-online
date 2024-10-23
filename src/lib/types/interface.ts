@@ -1,14 +1,23 @@
+import { Direction } from "./enum";
+
 export interface Ship {
   name: string;
   image?: string;
   size: number;
   color: string;
   designated?: boolean;
-  direction?: string
-  coords?: Coords
+  direction?: Direction
+  row?: number[]
+  col?: number[]
 }
 
-interface Coords {
+export interface EnemyShipPlacement {
+  id: number
+  ship_name: string
   row: number[]
-  column: number[]
+  col: number[]
+  direction: Direction
+  player_id: number
+  match_id: number
+  ships: Ship
 }
