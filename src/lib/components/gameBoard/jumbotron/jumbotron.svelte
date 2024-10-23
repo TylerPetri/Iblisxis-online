@@ -27,5 +27,5 @@
 </div>
 
 <style lang="scss">
-	@import './jumbotron.scss';
+	@use './jumbotron.scss';
 </style>

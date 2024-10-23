@@ -298,5 +298,5 @@
 </div>
 
 <style lang="scss">
-	@import './gameboard.scss';
+	@use './gameboard.scss';
 </style>
