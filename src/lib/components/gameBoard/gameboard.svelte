@@ -3,8 +3,10 @@
 	import NodeAlly from './node/ally.svelte';
 	import NodeEnemy from './node/enemy.svelte';
 
+	import { enemyShipCoordsFill } from '$lib/db/controllers/enemyShips';
+
 	import { Direction, GameActions, Player } from '$lib/types/enum';
-	import type { Ship } from '$lib/types/interface';
+	import type { EnemyShipPlacement, Ship } from '$lib/types/interface';
 
 	import aircraftCarrier from '$lib/assets/ships/aircraft-carrier.png';
 	import battleship from '$lib/assets/ships/battleship.png';
@@ -13,6 +15,11 @@
 	import submarine from '$lib/assets/ships/submarine.png';
 
 	export let ships: Ship[];
+	export let enemyShips: EnemyShipPlacement[];
+
+	const enemyCoords = enemyShips.map((ship) => {
+		return enemyShipCoordsFill(ship);
+	});
 
 	const columns: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 	const rows: string[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
@@ -59,13 +66,6 @@
 			}
 		});
 	}
-
-	import enemyShipPlacements from '$lib/db/mockEnemyShipPlacement.json';
-	import { enemyShipCoordsFill } from '$lib/db/controllers/enemyShips';
-	const enemyShips = enemyShipPlacements.ships;
-	const enemyCoords = enemyShips.map((ship) => {
-		return enemyShipCoordsFill(ship);
-	});
 
 	function handleClickShip(shipName: string) {
 		if (selectedShip?.name === shipName) {
@@ -222,7 +222,7 @@
 								bind:inBattlefieldEnemy
 								ship={enemyShips[
 									enemyCoords.findIndex(
-										(x) => x.coords?.row.includes(i) && x.coords.column.includes(j)
+										(x) => x.row?.includes(i) && x.col?.includes(j)
 									)
 								]}
 								bind:hitOrMiss

@@ -21,12 +21,12 @@ CREATE TABLE IF NOT EXISTS ships (
 	name varchar(255) NOT NULL UNIQUE,
 	size bigint NOT NULL,
 	color varchar(255) NOT NULL UNIQUE,
-	PRIMARY KEY (id, name)
+	PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS enemy_ship_placements (
 	id serial NOT NULL UNIQUE,
-	ship_name varchar(255) NOT NULL UNIQUE,
+	ship_id bigint NOT NULL UNIQUE,
 	row bigint NOT NULL,
 	col bigint NOT NULL,
   direction varchar(255) NOT NULL,
@@ -40,7 +40,7 @@ ALTER TABLE matches ADD CONSTRAINT matches_fk1 FOREIGN KEY (player1_id) REFERENC
 
 ALTER TABLE matches ADD CONSTRAINT matches_fk2 FOREIGN KEY (player2_id) REFERENCES players(id);
 
-ALTER TABLE enemy_ship_placements ADD CONSTRAINT enemy_ship_placements_fk1 FOREIGN KEY (ship_name) REFERENCES ships(name);
+ALTER TABLE enemy_ship_placements ADD CONSTRAINT enemy_ship_placements_fk1 FOREIGN KEY (ship_id) REFERENCES ships(id);
 
 ALTER TABLE enemy_ship_placements ADD CONSTRAINT enemy_ship_placements_fk4 FOREIGN KEY (player_id) REFERENCES players(id);
 
