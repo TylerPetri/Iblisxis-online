@@ -1,11 +1,9 @@
 <script lang="ts">
 	import Gameboard from '$lib/components/gameBoard/gameboard.svelte';
-
-	export let data
 </script>
 
 <div class="wrapper">
-	<Gameboard ships={JSON.parse(data.body.ships)} enemyShips={JSON.parse(data.body.enemyShipPlacement)}/>
+	<Gameboard />
 </div>
 
 <style lang="scss">

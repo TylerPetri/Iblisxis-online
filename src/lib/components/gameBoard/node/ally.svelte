@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import { GameActions } from '$lib/types/enum';
 	import type { Ship } from '$lib/types/interface';
 
@@ -13,13 +14,13 @@
 	export let placingShip: boolean;
 	export let authShipPlacement: boolean[];
 
-	export let ships: Ship[];
 	export let designatedShipsCount: number;
 
 	export let enemyFiresToIdx: string | undefined;
 	export let shipNodeCountAlly: number;
 	export let hitOrMiss: GameActions.hit | GameActions.miss | undefined;
 
+	const ships: Ship[] = JSON.parse($page.data.body.ships)
 	let designatedNodeData: Ship | null = null;
 	let visited: boolean = false;
 

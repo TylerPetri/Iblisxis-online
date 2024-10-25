@@ -14,12 +14,18 @@
 	import destroyer from '$lib/assets/ships/destroyer.png';
 	import submarine from '$lib/assets/ships/submarine.png';
 
-	export let ships: Ship[];
-	export let enemyShips: EnemyShipPlacement[];
+	import { page } from '$app/stores';
+	import { applyAction, enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 
-	const enemyCoords = enemyShips.map((ship) => {
+	const enemyShips: EnemyShipPlacement[] | undefined = $page.data.body.enemyShipPlacement
+		? JSON.parse($page.data.body.enemyShipPlacement)
+		: undefined;
+	const enemyCoords = enemyShips?.map((ship) => {
 		return enemyShipCoordsFill(ship);
 	});
+
+	const ships: Ship[] = JSON.parse($page.data.body.ships);
 
 	const columns: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 	const rows: string[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
@@ -188,7 +194,11 @@
 			enemyFiresToIdx = generateRandom();
 			whosTurn = Player.ally;
 		}, 1000);
+
 	}
+
+	$: console.log($page)
+
 
 	let jumbotronScenario: GameActions;
 	$: if (designatedShipsCount === ships.length) {
@@ -212,7 +222,7 @@
 
 <div class="wrapper">
 	<div class="boardgame-container">
-		{#if designatedShipsCount === enemyShips.length}
+		{#if designatedShipsCount === ships.length && enemyShips && enemyCoords}
 			<Jumbotron scenario={jumbotronScenario} {hitOrMiss} {whosTurn} />
 			<div class="enemy-board" on:mouseleave={() => (inBattlefieldEnemy = false)} role="table">
 				{#each rows as row, i}
@@ -221,9 +231,7 @@
 							<NodeEnemy
 								bind:inBattlefieldEnemy
 								ship={enemyShips[
-									enemyCoords.findIndex(
-										(x) => x.row?.includes(i) && x.col?.includes(j)
-									)
+									enemyCoords.findIndex((x) => x.row?.includes(i) && x.col?.includes(j))
 								]}
 								bind:hitOrMiss
 								bind:whosTurn
@@ -234,6 +242,27 @@
 				{/each}
 			</div>
 		{/if}
+		<form
+			method="POST"
+			action="?/statusReady"
+			style="margin: 0 auto"
+			use:enhance={({ formData }) => {
+				formData.set('name', 'Jabami');
+
+				return async ({ result, update }) => {
+					if (result.type === 'redirect') {
+						goto(result.location);
+					} else {
+						await applyAction(result);
+					}
+					// `result` is an `ActionResult` object
+					// `update` is a function which triggers the default logic that would be triggered if this callback wasn't set
+				};
+			}}
+		>
+			<input name="name" />
+			<button class="btn btn--ready">READY</button>
+		</form>
 		<div
 			class="ally-board"
 			class:border={designatedShipsCount === ships.length}
@@ -257,7 +286,6 @@
 							bind:inBattlefieldAlly
 							bind:selectedShip
 							bind:placingShip
-							bind:ships
 							bind:designatedShipsCount
 							bind:shipNodeCountAlly
 							{enemyFiresToIdx}

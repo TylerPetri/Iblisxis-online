@@ -42,6 +42,18 @@
 
 		height: max-content;
 	}
+
+	.btn {
+		&--ready {
+			&:hover {
+				background-color: green;
+			}
+		}
+
+		&:hover {
+			cursor: pointer;
+		}
+	}
 }
 
 .ship-selection-container {
