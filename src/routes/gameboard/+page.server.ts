@@ -2,42 +2,7 @@ import prisma from '$lib/prisma';
 import { redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ parent }) => {
-	const findPlayer = await prisma.players.findMany({
-		where: {
-			name: 'Jabami'
-		},
-		select: {
-			id: true
-		}
-	});
-	const findMatch = await prisma.matches.findMany({
-		where: {
-			player1_id: findPlayer[0].id
-		},
-		select: {
-			id: true,
-			player2_id: true
-		}
-	});
-	const findEnemyShipPlacement = await prisma.player_ship_placements.findMany({
-		where: {
-			player_id: findMatch[0].player2_id
-		},
-		include: {
-			ships: true
-		}
-	});
-
-	return {
-		statusCode: 200,
-		body: {
-			...(await parent()).body,
-			enemyShipPlacement: JSON.stringify(findEnemyShipPlacement, (key, value) =>
-				typeof value === 'bigint' ? Number(value) : value
-			)
-		}
-	};
+export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {

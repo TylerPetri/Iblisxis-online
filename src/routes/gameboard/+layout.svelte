@@ -196,8 +196,6 @@
 		}, 1000);
 	}
 
-	$: console.log($page);
-
 	let jumbotronScenario: GameActions;
 	$: if (designatedShipsCount === ships.length) {
 		jumbotronScenario = GameActions.start;
