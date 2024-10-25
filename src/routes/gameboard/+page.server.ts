@@ -1,5 +1,5 @@
 import prisma from '$lib/prisma';
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import { redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ parent }) => {
@@ -20,9 +20,8 @@ export const load: PageServerLoad = async ({ parent }) => {
 			player2_id: true
 		}
 	});
-	const findEnemyShipPlacement = await prisma.enemy_ship_placements.findMany({
+	const findEnemyShipPlacement = await prisma.player_ship_placements.findMany({
 		where: {
-			match_id: findMatch[0].id,
 			player_id: findMatch[0].player2_id
 		},
 		include: {
@@ -57,7 +56,7 @@ export const actions: Actions = {
 
 				const findOpponent = await prisma.players.findFirst({
 					where: {
-						game_status: 'playing'
+						game_status: 'waiting'
 					}
 				});
 
@@ -70,7 +69,7 @@ export const actions: Actions = {
 							id: findOpponent.id
 						},
 						data: {
-							game_status: 'waiting'
+							game_status: 'playing'
 						},
 					})
 					console.log(updatePlayer)

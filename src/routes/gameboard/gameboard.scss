@@ -1,3 +1,12 @@
+.previous-wrapper {
+	height: 100vh;
+	width: 100vw;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: black;
+}
+
 .wrapper {
 	display: flex;
 	flex-direction: column;
@@ -32,7 +41,7 @@
 	}
 
 	.border {
-		border: 3px solid grey
+		border: 3px solid grey;
 	}
 
 	.row {
@@ -86,9 +95,9 @@
 		}
 	}
 
-  .selected {
-    background-color: rgb(116, 21, 32, 0.666);
-  }
+	.selected {
+		background-color: rgb(116, 21, 32, 0.666);
+	}
 
 	.ship-container {
 		.image-container {
@@ -105,18 +114,18 @@
 			gap: 4px;
 		}
 
-    .vertical {
-      flex-direction: column;
-      margin: 0 auto;
-    }
+		.vertical {
+			flex-direction: column;
+			margin: 0 auto;
+		}
 	}
 
-  .rotate {
-    color:grey;
-    
-    i {
-      font-size: 50px;
-      margin: 0 auto;
-    }
-  }
+	.rotate {
+		color: grey;
+
+		i {
+			font-size: 50px;
+			margin: 0 auto;
+		}
+	}
 }

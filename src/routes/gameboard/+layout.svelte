@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Jumbotron from './jumbotron/jumbotron.svelte';
-	import NodeAlly from './node/ally.svelte';
-	import NodeEnemy from './node/enemy.svelte';
+	import Jumbotron from '$lib/components/gameBoard/jumbotron/jumbotron.svelte';
+	import NodeAlly from '$lib/components/gameBoard/node/ally.svelte';
+	import NodeEnemy from '$lib/components/gameBoard/node/enemy.svelte';
 
 	import { enemyShipCoordsFill } from '$lib/db/controllers/enemyShips';
 
@@ -194,11 +194,9 @@
 			enemyFiresToIdx = generateRandom();
 			whosTurn = Player.ally;
 		}, 1000);
-
 	}
 
-	$: console.log($page)
-
+	$: console.log($page);
 
 	let jumbotronScenario: GameActions;
 	$: if (designatedShipsCount === ships.length) {
@@ -220,109 +218,114 @@
 	}
 </script>
 
-<div class="wrapper">
-	<div class="boardgame-container">
-		{#if designatedShipsCount === ships.length && enemyShips && enemyCoords}
-			<Jumbotron scenario={jumbotronScenario} {hitOrMiss} {whosTurn} />
-			<div class="enemy-board" on:mouseleave={() => (inBattlefieldEnemy = false)} role="table">
+<div class="previous-wrapper">
+	<slot></slot>
+	<div class="wrapper">
+		<div class="boardgame-container">
+			{#if designatedShipsCount === ships.length && enemyShips && enemyCoords}
+				<Jumbotron scenario={jumbotronScenario} {hitOrMiss} {whosTurn} />
+				<div class="enemy-board" on:mouseleave={() => (inBattlefieldEnemy = false)} role="table">
+					{#each rows as row, i}
+						<div class="row">
+							{#each columns as col, j}
+								<NodeEnemy
+									bind:inBattlefieldEnemy
+									ship={enemyShips[
+										enemyCoords.findIndex((x) => x.row?.includes(i) && x.col?.includes(j))
+									]}
+									bind:hitOrMiss
+									bind:whosTurn
+									bind:shipNodeCountEnemy
+								/>
+							{/each}
+						</div>
+					{/each}
+				</div>
+			{/if}
+			<form
+				method="POST"
+				action="?/statusReady"
+				style="margin: 0 auto"
+				use:enhance={({ formData }) => {
+					formData.set('name', 'Jabami');
+
+					return async ({ result, update }) => {
+						if (result.type === 'redirect') {
+							goto(result.location);
+						} else {
+							await applyAction(result);
+						}
+						// `result` is an `ActionResult` object
+						// `update` is a function which triggers the default logic that would be triggered if this callback wasn't set
+					};
+				}}
+			>
+				<input name="name" />
+				<button class="btn btn--ready">READY</button>
+			</form>
+			<div
+				class="ally-board"
+				class:border={designatedShipsCount === ships.length}
+				on:mouseleave={() => (inBattlefieldAlly = false)}
+				role="table"
+			>
 				{#each rows as row, i}
 					<div class="row">
 						{#each columns as col, j}
-							<NodeEnemy
-								bind:inBattlefieldEnemy
-								ship={enemyShips[
-									enemyCoords.findIndex((x) => x.row?.includes(i) && x.col?.includes(j))
-								]}
+							<NodeAlly
+								idx={[i, j]}
+								bind:authShipPlacement
+								bind:hoveringIdx
+								hoveringSelectedShipIdx={hoveringSelectedShipList &&
+									(dotsDirection === Direction.horizontal && hoveringSelectedShipList[0] === i
+										? hoveringSelectedShipList.slice(1, hoveringSelectedShipList.length).indexOf(j)
+										: dotsDirection === Direction.vertical && hoveringSelectedShipList[0] === j
+											? hoveringSelectedShipList
+													.slice(1, hoveringSelectedShipList.length)
+													.indexOf(i)
+											: -1)}
 								bind:hitOrMiss
-								bind:whosTurn
-								bind:shipNodeCountEnemy
+								bind:inBattlefieldAlly
+								bind:selectedShip
+								bind:placingShip
+								bind:designatedShipsCount
+								bind:shipNodeCountAlly
+								{enemyFiresToIdx}
 							/>
 						{/each}
 					</div>
 				{/each}
 			</div>
+		</div>
+
+		{#if designatedShipsCount !== ships.length}
+			<div class="ship-selection-container">
+				{#each ships as ship, i}
+					{#key ship.designated}
+						<button
+							class="ship-container"
+							class:selected={selectedShip === ship}
+							class:disabled={ship.designated}
+							on:click={() => handleClickShip(ship.name)}
+							disabled={ship.designated}
+						>
+							<div class="image-container">
+								<img src={ship.image} alt={ship.image} />
+							</div>
+							<div class="dots" class:vertical={dotsDirection === Direction.vertical}>
+								{#each { length: ship.size } as s}
+									<i class="fa-solid fa-circle-dot" style={`color: ${ship.color}`}></i>
+								{/each}
+							</div>
+						</button>
+					{/key}
+				{/each}
+				<button class="rotate" on:click={() => handleRotate()}
+					><i class="fa-solid fa-arrows-spin"></i></button
+				>
+			</div>
 		{/if}
-		<form
-			method="POST"
-			action="?/statusReady"
-			style="margin: 0 auto"
-			use:enhance={({ formData }) => {
-				formData.set('name', 'Jabami');
-
-				return async ({ result, update }) => {
-					if (result.type === 'redirect') {
-						goto(result.location);
-					} else {
-						await applyAction(result);
-					}
-					// `result` is an `ActionResult` object
-					// `update` is a function which triggers the default logic that would be triggered if this callback wasn't set
-				};
-			}}
-		>
-			<input name="name" />
-			<button class="btn btn--ready">READY</button>
-		</form>
-		<div
-			class="ally-board"
-			class:border={designatedShipsCount === ships.length}
-			on:mouseleave={() => (inBattlefieldAlly = false)}
-			role="table"
-		>
-			{#each rows as row, i}
-				<div class="row">
-					{#each columns as col, j}
-						<NodeAlly
-							idx={[i, j]}
-							bind:authShipPlacement
-							bind:hoveringIdx
-							hoveringSelectedShipIdx={hoveringSelectedShipList &&
-								(dotsDirection === Direction.horizontal && hoveringSelectedShipList[0] === i
-									? hoveringSelectedShipList.slice(1, hoveringSelectedShipList.length).indexOf(j)
-									: dotsDirection === Direction.vertical && hoveringSelectedShipList[0] === j
-										? hoveringSelectedShipList.slice(1, hoveringSelectedShipList.length).indexOf(i)
-										: -1)}
-							bind:hitOrMiss
-							bind:inBattlefieldAlly
-							bind:selectedShip
-							bind:placingShip
-							bind:designatedShipsCount
-							bind:shipNodeCountAlly
-							{enemyFiresToIdx}
-						/>
-					{/each}
-				</div>
-			{/each}
-		</div>
 	</div>
-
-	{#if designatedShipsCount !== ships.length}
-		<div class="ship-selection-container">
-			{#each ships as ship, i}
-				{#key ship.designated}
-					<button
-						class="ship-container"
-						class:selected={selectedShip === ship}
-						class:disabled={ship.designated}
-						on:click={() => handleClickShip(ship.name)}
-						disabled={ship.designated}
-					>
-						<div class="image-container">
-							<img src={ship.image} alt={ship.image} />
-						</div>
-						<div class="dots" class:vertical={dotsDirection === Direction.vertical}>
-							{#each { length: ship.size } as s}
-								<i class="fa-solid fa-circle-dot" style={`color: ${ship.color}`}></i>
-							{/each}
-						</div>
-					</button>
-				{/key}
-			{/each}
-			<button class="rotate" on:click={() => handleRotate()}
-				><i class="fa-solid fa-arrows-spin"></i></button
-			>
-		</div>
-	{/if}
 </div>
 
 <style lang="scss">
