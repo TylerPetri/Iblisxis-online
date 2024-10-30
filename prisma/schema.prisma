@@ -7,46 +7,108 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model matches {
-  id                                  BigInt  @id @unique @default(autoincrement())
-  player1_id                          BigInt
-  player2_id                          BigInt
-  players_matches_player1_idToplayers players @relation("matches_player1_idToplayers", fields: [player1_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "matches_fk1")
-  players_matches_player2_idToplayers players @relation("matches_player2_idToplayers", fields: [player2_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "matches_fk2")
+model game_player_ships {
+  id           BigInt                  @id @unique @default(autoincrement())
+  game_id      BigInt
+  player_id    BigInt
+  ship_id      BigInt
+  line         Unsupported("geometry")
+  hits         BigInt                  @default(0)
+  game_players game_players            @relation(fields: [game_id, player_id], references: [game_id, player_id], onDelete: NoAction, onUpdate: NoAction, map: "game_player_ships_fk1")
+  lu_ships     lu_ships                @relation(fields: [ship_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "game_player_ships_fk2")
 }
 
-model player_ship_placements {
-  id        BigInt  @id @unique @default(autoincrement())
-  ship_id   BigInt  @unique
-  row       BigInt
-  col       BigInt
-  player_id BigInt  @unique
-  ships     ships   @relation(fields: [ship_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "player_ship_placements_fk1")
-  players   players @relation(fields: [player_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "player_ship_placements_fk4")
+model game_player_shots {
+  id           BigInt                  @id @unique @default(autoincrement())
+  game_id      BigInt
+  player_id    BigInt
+  point        Unsupported("geometry")
+  result       player_shot_result_enum
+  game_players game_players            @relation(fields: [game_id, player_id], references: [game_id, player_id], onDelete: NoAction, onUpdate: NoAction, map: "game_player_shots_fk1")
+}
+
+model game_players {
+  game_id           BigInt
+  player_id         BigInt
+  score             BigInt
+  player_order      player_order_enum
+  game_player_ships game_player_ships[]
+  game_player_shots game_player_shots[]
+  games             games               @relation(fields: [game_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "game_players_fk0")
+  players           players             @relation(fields: [player_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "game_players_fk1")
+
+  @@id([game_id, player_id])
+}
+
+model games {
+  id               BigInt           @id @unique @default(autoincrement())
+  winner_player_id BigInt?
+  status           game_status_enum @default(ongoing)
+  game_players     game_players[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model lu_ships {
+  id                BigInt              @id @unique @default(autoincrement())
+  name              ship_name_enum      @unique
+  size              BigInt
+  color             ship_color_enum     @unique
+  points            BigInt
+  game_player_ships game_player_ships[]
 }
 
 model players {
-  id                                  BigInt                  @id @unique @default(autoincrement())
-  name                                String                  @unique @db.String(255)
-  email                               String?                 @unique @db.String(255)
-  password                            String?                 @db.String(255)
-  logged_in                           Boolean                 @default(false)
-  user_token                          String?                 @db.String(255)
-  token_expiration                    DateTime?               @db.Timestamp(6)
-  game_status                         String                  @default("idle") @db.String(255)
-  matches_matches_player1_idToplayers matches[]               @relation("matches_player1_idToplayers")
-  matches_matches_player2_idToplayers matches[]               @relation("matches_player2_idToplayers")
-  player_ship_placements              player_ship_placements?
-}
-
-model ships {
-  id                     BigInt                  @id @unique @default(autoincrement())
-  name                   String                  @unique @db.String(255)
-  size                   BigInt
-  color                  String                  @unique @db.String(255)
-  player_ship_placements player_ship_placements?
+  id                      BigInt                       @id @unique @default(autoincrement())
+  name                    String                       @unique @db.String(255)
+  email                   String?                      @unique @db.String(255)
+  password                String?                      @db.String(255)
+  looking_for_game_status looking_for_game_status_enum @default(idle)
+  logged_in               Boolean                      @default(false)
+  user_token              String?                      @db.String(255)
+  token_expiration        DateTime?                    @db.Timestamp(6)
+  game_players            game_players[]
 }
 
 enum crdb_internal_region {
   gcp_us_east1 @map("gcp-us-east1")
+}
+
+enum game_status_enum {
+  ongoing
+  finished
+}
+
+enum looking_for_game_status_enum {
+  idle
+  waiting
+  playing
+}
+
+enum player_order_enum {
+  player
+  opponent
+}
+
+enum player_shot_result_enum {
+  miss
+  hit
+  sunk
+  won
+  ERROR
+}
+
+enum ship_color_enum {
+  orange
+  red
+  grey
+  green
+  purple
+}
+
+enum ship_name_enum {
+  aircraftCarrier
+  battleship
+  cruiser
+  submarine
+  destroyer
 }
