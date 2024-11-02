@@ -18,14 +18,12 @@
 	import { applyAction, enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 
-	const enemyShips: EnemyShipPlacement[] | undefined = $page.data.body.enemyShipPlacement
-		? JSON.parse($page.data.body.enemyShipPlacement)
-		: undefined;
-	const enemyCoords = enemyShips?.map((ship) => {
+	$: enemyShips = $page.data.body.enemyShipPlacement
+	const enemyCoords = enemyShips?.map((ship: EnemyShipPlacement) => {
 		return enemyShipCoordsFill(ship);
 	});
 
-	const ships: Ship[] = JSON.parse($page.data.body.ships);
+	const ships: Ship[] = $page.data.body.ships
 
 	const columns: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 	const rows: string[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];

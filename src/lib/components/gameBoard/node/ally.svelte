@@ -20,7 +20,7 @@
 	export let shipNodeCountAlly: number;
 	export let hitOrMiss: GameActions.hit | GameActions.miss | undefined;
 
-	const ships: Ship[] = JSON.parse($page.data.body.ships)
+	$: ships = $page.data.body.ships
 	let designatedNodeData: Ship | null = null;
 	let visited: boolean = false;
 

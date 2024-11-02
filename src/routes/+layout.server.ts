@@ -1,14 +1,14 @@
-import prisma from '$lib/prisma';
+import db from '$lib/db/index'
+import { luShips } from '$lib/db/schema';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async () => {
-	const allShips = await prisma.ships.findMany();
-  return {
+	const ships = await db.select().from(luShips)
+
+	return {
 		statusCode: 200,
 		body: {
-			ships: JSON.stringify(allShips, (key, value) =>
-				typeof value === 'bigint' ? Number(value) : value
-			)
+			ships
 		}
 	};
 }
